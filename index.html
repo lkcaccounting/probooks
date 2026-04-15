@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProBooks - Professional Accounting Software</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUHJvQm9va3MiLCJzaG9ydF9uYW1lIjoiUHJvQm9va3MiLCJzdGFydF91cmwiOiIuIiwidGhlbWVfY29sb3IiOiIjMDA3YmZmIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29uc19zcmMiOlt7InNyYyI6Ii4vaWNvbnMvYm9vay5zdmciLCJzcmVzZXMiOiI4MHAiLCJzcmNfX3NpemVzIjoiODAweDgwMCIsInR5cGUiOiJpbWFnZS9wbmciLCJwdXJwb3NlIjpbeyJzcmMiOiIuL2ljb25zL2Nhc2guc3ZnIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #059669;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+            flex-direction: column;
+        }
+        
+        /* Login Screen */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.3s;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            width: 90%;
+            max-width: 450px;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .login-box h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            text-align: center;
+        }
+        
+        .login-box p {
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        margin-top: 1rem;
+        display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        box-shadow: 0 10px 20px -5px rgba(30, 64, 175, 0.3);
+        }
+        
+        /* Main App Layout */
+        .app-container {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            background: white;
+            width: 260px;
+            padding: 1.5rem;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(30, 64, 175, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav-item.active {
+            background: rgba(30, 64, 175, 0.15);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: var(--bg);
+        }
+        
+        .top-bar {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .business-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .business-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .connection-status.online {
+            color: var(--secondary);
+        }
+        
+        .connection-status.offline {
+            color: var(--danger);
+        }
+        
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .card-value.positive {
+            color: var(--secondary);
+        }
+        
+        .card-value.negative {
+            color: var(--danger);
+        }
+        
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: var(--bg);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        tr:hover {
+            background: var(--bg);
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: rgba(220, 38, 38, 0.1);
+        color: var(--danger);
+        transform: scale(1.1);
+        display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .action-btn.edit:hover {
+            background: rgba(30, 64, 175, 0.1);
+            color: var(--primary);
+        }
+        
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .input-group input, .input-group select {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        color: var(--text);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(0,0,0,0.1);
+            color: var(--danger);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab:hover {
+            color: var(--primary);
+        }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(100%);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                bottom: 0;
+                height: auto;
+                flex-direction: row;
+                padding: 0.5rem;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .app-container {
+                flex-direction: column-reverse;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+        
+        /* Print Styles */
+        @media print {
+            .sidebar, .top-bar, .login-overlay {
+                display: none !important;
+            }
+            
+            .main-content {
+                padding: 0;
+            overflow: visible;
+            }
+            
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-overlay" id="loginScreen">
+        <div class="login-box">
+            <h1>🔒 ProBooks Setup</h1>
+            <p>Create your secure administrator account</p>
+            <form id="setupForm">
+                <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="businessName" placeholder="Your Business Name" required>
+                </div>
+                <div class="form-group">
+                    <label>Admin Password</label>
+                    <input type="password" id="adminPassword" placeholder="Create secure password" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span>🚀</span> Initialize System
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">📊</div>
+                <div>
+                    <div style="font-weight: 700; font-size: 1.25rem;">ProBooks</div>
+                    <div style="font-size: 0.875rem; color: #64748b;">Accounting</div>
+                </div>
+            </div>
+            
+            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="nav-item active" onclick="showSection('dashboard')">
+                    <span class="nav-icon">📈</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="showSection('income')">
+                    <span class="nav-icon">💰</span>
+                    <span>Income</span>
+                </div>
+                <div class="nav-item" onclick="showSection('expenses')">
+                    <span class="nav-icon">💸</span>
+                    <span>Expenses</span>
+                </div>
+                <div class="nav-item" onclick="showSection('invoices')">
+                    <span class="nav-icon">📄</span>
+                    <span>Invoices</span>
+                </div>
+                <div class="nav-item" onclick="showSection('inventory')">
+                    <span class="nav-icon">📦</span>
+                    <span>Inventory</span>
+                </div>
+                <div class="nav-item" onclick="showSection('reports')">
+                    <span class="nav-icon">📊</span>
+                    <span>Reports</span>
+                </div>
+                <div class="nav-item" onclick="showSection('settings')" style="margin-top: auto;">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="business-info">
+                    <div class="logo" style="width: 32px; height: 32px; font-size: 1rem;">🏢</div>
+                    <div class="business-name" id="displayBusinessName">My Business</div>
+                </div>
+                <div class="connection-status offline" id="connectionStatus">
+                    <span>●</span>
+                    <span id="connectionText">Offline Mode</span>
+                </div>
+                <button class="btn btn-primary" onclick="downloadReport()" style="width: auto; padding: 0.5rem 1rem;">
+                        <span>📥</span> Download Report
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section-content">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Dashboard Overview</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Total Income</span>
+                        </div>
+                            <span style="font-size: 0.875rem; color: #64748b;">This Month</span>
+                        </div>
+                        <div class="card-value positive" id="totalIncome">$0.00</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Total Expenses</span>
+                        </div>
+                            <span style="font-size: 0.875rem; color: #64748b;">This Month</span>
+                        </div>
+                        <div class="card-value negative" id="totalExpenses">$0.00</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Net Profit</span>
+                        </div>
+                            <span style="font-size: 0.875rem; color: #64748b;">This Month</span>
+                        </div>
+                        <div class="card-value" id="netProfit" style="color: var(--primary);">$0.00</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Low Stock Items</span>
+                        </div>
+                            <span style="font-size: 0.875rem; color: #64748b;" id="lowStockCount">0 items</span>
+                        </div>
+                        <div class="card-value negative" id="lowStockAlert">None</div>
+                    </div>
+                </div>
+                
+                <div class="table-container" style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary);">Recent Transactions</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentTransactions">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #64748b; padding: 2rem;">No transactions yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Income Section -->
+            <section id="income" class="section-content" style="display: none;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Income Management</h2>
+                
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" id="incomeDate" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Description</label>
+                        <input type="text" id="incomeDescription" placeholder="e.g., Sales, Service Fee" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="incomeAmount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="incomeCategory">
+                            <option value="sales">Sales</option>
+                            <option value="service">Service</option>
+                            <option value="investment">Investment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="addIncome()">
+                    <span>➕</span> Add Income Record
+                </button>
+                
+                <div class="table-container" style="margin-top: 2rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incomeTable">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #64748b; padding: 2rem;">No income records yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Expenses Section -->
+            <section id="expenses" class="section-content" style="display: none;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Expense Management</h2>
+                
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Description</label>
+                        <input type="text" id="expenseDescription" placeholder="e.g., Rent, Utilities, Supplies" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="expenseCategory">
+                            <option value="rent">Rent</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="salary">Salaries</option>
+                            <option value="supplies">Supplies</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="addExpense()">
+                    <span>➕</span> Add Expense Record
+                </button>
+                
+                <div class="table-container" style="margin-top: 2rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTable">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #64748b; padding: 2rem;">No expense records yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Invoices Section -->
+            <section id="invoices" class="section-content" style="display: none;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Invoice Management</h2>
+                
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Invoice #</label>
+                        <input type="text" id="invoiceNumber" placeholder="e.g., INV-001" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Customer</label>
+                        <input type="text" id="invoiceCustomer" placeholder="Customer Name" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" id="invoiceDate" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="invoiceAmount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Description</label>
+                        <textarea id="invoiceDescription" rows="3" placeholder="Invoice details..." style="padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-family: 'Segoe UI'; width: 100%; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="generateInvoice()">
+                    <span>📄</span> Generate & Download Invoice
+                </button>
+                
+                <div class="table-container" style="margin-top: 2rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #64748b; padding: 2rem;">No invoices yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section id="inventory" class="section-content" style="display: none;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Inventory Management</h2>
+                
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Item Name</label>
+                        <input type="text" id="itemName" placeholder="Product name" required>
+                    </div>
+                    <div class="input-group">
+                        <label>SKU/Code</label>
+                        <input type="text" id="itemSKU" placeholder="SKU-123" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Quantity</label>
+                        <input type="number" id="ItemQuantity" placeholder="0" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Unit Cost ($)</label>
+                        <input type="number" id="ItemCost" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Min Stock Level</label>
+                        <input type="number" id="MinStock" placeholder="10" min="0" required>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="addInventory()">
+                    <span>➕</span> Add Stock Item
+                </button>
+                
+                <div class="table-container" style="margin-top: 2rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>SKU</th>
+                                <th>Qty</th>
+                                <th>Unit Cost</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTable">
+                            <tr>
+                            <td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No inventory items yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="section-content" style="display: none;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Financial Reports</h2>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="switchReport('pnl')">Profit & Loss</div>
+                    <div class="tab" onclick="switchReport('income')">Income Summary</div>
+                    <div class="tab" onclick="switchReport('expense')">Expense Report</div>
+                </div>
+                
+                <div id="pnlReport" class="report-content">
+                    <div class="table-container">
+                        <h3 style="margin: 1rem 0; color: var(--primary);">Profit & Loss Statement</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Revenue</th>
+                                    <th>Expenses</th>
+                                    <th>Net Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pnlTable">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #64748b; padding: 2rem;">Generate some transactions to see P&L report</td>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="section-content" style="display: none: none;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--primary);">System Settings</h2>
+                
+                <div class="card" style="max-width: 600px;">
+                    <h3 style="margin-bottom: 1rem;">Business Information</h3>
+                    <div class="input-group" style="margin-bottom: 1rem;">
+                        <label>Business Name</label>
+                        <input type="text" id="settingsBusinessName" readonly>
+                    </div>
+                    <div class="input-group">
+                        <label>Currency</label>
+                        <select id="currency">
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                            <option value="NGN">NGN (₦)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSettings()">
+                        <span>💾</span> Save Settings
+                    </button>
+                    
+                    <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(220, 38, 38, 0.1); border-radius: 8px; border-left: 4px solid var(--danger);">
+                        <h4>⚠️ Danger Zone</h4>
+                        <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1rem;">Clear all data and reset system</p>
+                        <button class="btn btn-primary" onclick="resetSystem()" style="background: var(--danger);">
+                            <span>🗑️</span> Reset All Data
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for PDF Preview -->
+    <div class="modal" id="pdfModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Invoice Preview</h3>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div id="invoicePreview"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastIcon">✓</span>
+        <span id="toastMessage">Operation successful</span>
+    </div>
+
+    <script>
+        // Application State
+        const AppState = {
+            isInitialized: false,
+            adminPassword: '',
+            businessName: '',
+            currency: 'USD',
+            income: [],
+            expenses: [],
+            invoices: [],
+            inventory: [],
+            lowStockThreshold: 10
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            checkInitialization();
+            setupEventListeners();
+            updateConnectionStatus();
+            
+            // Service Worker for offline support
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:text/javascript,').catch(console.error);
+            }
+        });
+
+        // Check if admin has been set up
+        function checkInitialization() {
+            const saved = localStorage.getItem('probooks_config');
+            if (saved) {
+                const config = JSON.parse(saved);
+                AppState.isInitialized = true;
+                AppState.businessName = config.businessName;
+                AppState.adminPassword = config.adminPassword;
+                AppState.currency = config.currency || 'USD';
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+                initializeDashboard();
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        }
+
+        // Setup Form Handler
+        function setupEventListeners() {
+            document.getElementById('setupForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const businessName = document.getElementById('businessName').value.trim();
+                const password = document.getElementById('adminPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (!businessName || !password) {
+                    showToast('Please fill in all fields', 'error');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match', 'error');
+                    return;
+                }
+                
+                // Save configuration
+                const config = {
+                    businessName,
+                    adminPassword: password,
+                    currency: 'USD',
+                    initialized: true
+                };
+                
+                localStorage.setItem('probooks_config', JSON.stringify(config));
+                localStorage.setItem('probooks_data', JSON.stringify({
+                    income: [],
+                    expenses: [],
+                    invoices: [],
+                    inventory: []
+                }));
+                
+                AppState.isInitialized = true;
+                AppState.businessName = businessName;
+                AppState.adminPassword = password;
+                
+                showToast('System initialized successfully!', 'success');
+                setTimeout(() => {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('appContainer').style.display = 'flex';
+                    initializeDashboard();
+                }, 1000);
+            });
+        }
+
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            document.querySelector(`.nav-item[onclick="showSection('${sectionId}')"]`).classList.add('active');
+            
+            // Refresh data
+            if (sectionId === 'dashboard') initializeDashboard();
+            if (sectionId === 'income') renderIncomeTable();
+            if (sectionId === 'expenses') renderExpenseTable();
+            if (sectionId === 'invoices') renderInvoiceTable();
+            if (sectionId === 'inventory') renderInventoryTable();
+            if (sectionId === 'reports') generateReports();
+        }
+
+        // Dashboard Functions
+        function initializeDashboard() {
+            updateDashboardStats();
+            renderRecentTransactions();
+            checkLowStock();
+            document.getElementById('displayBusinessName').textContent = AppState.businessName;
+            document.getElementById('settingsBusinessName').value = AppState.businessName;
+        }
+
+        function updateDashboardStats() {
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            
+            let monthlyIncome = 0;
+            let monthlyExpenses = 0;
+ let monthlyExpenses = 0;
+            
+            AppState.income.forEach(item => {
+                const itemDate = new Date(item.date);
+                if (itemDate >= monthStart && itemDate <= monthEnd) {
+                    monthlyIncome += item.amount;
+                }
+            });
+            
+            AppState.expenses.forEach(item => {
+                const itemDate = new Date(item.date);
+                if (itemDate >= monthStart && itemDate <= monthEnd) {
+                    monthlyExpenses += item.Amount;
+                }
+            });
+            
+            const netProfit = monthlyIncome - monthlyExpenses;
+            
+            document.getElementById('totalIncome').textContent = formatCurrency(monthlyIncome);
+            document.getElementById('TotalExpenses').textContent = formatCurrency(monthlyExpenses);
+            document.getElementById('NetProfit').textContent = formatCurrency(netProfit);
+            
+            const profitElement = document.getElementById('NetProfit');
+            if (netProfit > 0) {
+                profitElement.className = 'card-value positive';
+            } else if (netProfit < 0) {
+                profitElement.className = 'card-value negative';
+            } else {
+                profitElement.className = 'card-value';
+            document.getElementById('lowStockCount').textContent = lowStockItems.length + ' items';
+        }
+
+        function renderRecentTransactions() {
+            const tbody = document.getElementById('RecentTransactions');
+            const allTransactions = [
+                ...AppState.income.map(i => ({...i, type: 'Income'})),
+                ...AppState.expenses.map(i => ({...i, type: 'Expense'})),
+                ...AppState.invoices.map(i => ({...i, type: 'Invoice'}))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            
+            if (allTransactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 2rem;">No transactions yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = allTransactions.map(t => `
+                <tr>
+                    <td>${new Date(T.date).toLocaleDateString()}</td>
+                    <td><span style="color: ${T.type === 'Income' ? 'var(--secondary)' : T.type === 'Expense' ? 'var(--danger)' : 'var(--primary)'}">${T.type}</span></td>
+                    <td>${T.description || T.customer || T.number || '-'}</td>
+                    <td>${formatCurrency(T.amount)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Income Management
+        function addIncome() {
+            const date = document.getElementById('incomeDate').value;
+            const description = document.getElementById('incomeDescription').value.trim();
+            const amount = parseFloat(document.getElementById('incomeAmount').value);
+            const category = document.getElementById('incomeCategory').value;
+            
+            if (!date || !description || isNaN(amount)) {
+                showToast('Please fill in all fields correctly', 'error');
+                return;
+            }
+            
+            const income = {
+                id: Date.now(),
+                date: date,
+                description,
+                amount,
+                category,
+                createdAt: new Date().toISOString()
+            };
+            
+            AppState.income.push(income);
+            saveData();
+            
+            showToast('Income recorded successfully', 'success');
+            renderIncomeTable();
+            InitializeDashboard();
+            
+            // Clear form
+            document.getElementById('incomeDate').value = '';
+            document.getElementById('incomeDescription').value = '';
+            document.getElementById('incomeAmount').value = '';
+        }
+
+        function renderIncomeTable() {
+            const tbody = document.getElementById('incomeTable');
+            
+            if (AppState.income.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 2rem;">No income records yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = AppState.income.map(item => `
+                <tr>
+                    <td>${new Date(item.date).toLocaleDateString()}</td>
+                    <td>${item.description}</td>
+                    <td>${item.category}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                    <td>
+                        <button class="action-btn edit" onclick="deleteIncome(${item.id})" title="Delete">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteIncome(id) {
+            if (!confirm('Are you sure you want to delete this income record?')) return;
+            
+            AppState.income = AppState.income.filter(i => i.id !== id);
+            SaveData();
+            
+            showToast('Income deleted successfully', 'success');
+            RenderIncomeTable();
+            InitializeDashboard();
+        }
+
+        // Expense Management
+        function addExpense() {
+            const date = document.getElementById('expenseDate').value;
+            const description = document.getElementById('expenseDescription').value.trim();
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const category = document.getElementById('expenseCategory').value;
+            
+            if (!date || !description || isNaN(amount)) {
+                showToast('Please fill in all fields correctly', 'error');
+                return;
+            }
+            
+            const expense = {
+                id: Date.now(),
+                date: date,
+                description,
+                amount,
+                category,
+                createdAt: new Date().toISOString()
+            };
+            
+            AppState.expenses.push(expense);
+            SaveData();
+            
+            showToast('Expense recorded successfully', 'success');
+            renderExpenseTable();
+            InitializeDashboard();
+            
+            // Clear form
+            document.getElementById('expenseDate').value = '';
+            document.getElementById('expenseDescription').value = '';
+            document.getElementById('expenseAmount').value = '';
+        }
+
+        function renderExpenseTable() {
+            const tbody = document.getElementById('expenseTable');
+            
+            if (AppState.expenses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 2rem;">No expense records yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = AppState.expenses.map(item => `
+                <tr>
+                    <td>${new Date(item.date).toLocaleDateString()}</td>
+                    <td>${item.description}</td>
+                    <td>${item.category}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                    <td>
+                        <button class="action-btn edit" onclick="deleteExpense(${item.id})" title="Delete">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteExpense(id) {
+            if (!confirm('Are you sure you want to delete this expense record?')) return;
+            
+            AppState.expenses = AppState.expenses.filter(i => i.id !== Id);
+            SaveData();
+            
+            showToast('Expense deleted successfully', 'success');
+            RenderExpenseTable();
+            InitializeDashboard();
+        }
+
+        // Invoice Management
+        function generateInvoice() {
+            const number = document.getElementById('invoiceNumber').value.trim();
+            const customer = document.getElementById('invoiceCustomer').value.trim();
+            const date = document.getElementById('invoiceDate').value;
+            const amount = parseFloat(document.getElementById('invoiceAmount').value);
+            const description = document.getElementById('invoiceDescription').value.trim();
+            
+            if (!number || !customer || !date || isNaN(amount)) {
+                showToast('Please fill in all fields correctly', 'error');
+                return;
+            }
+            
+            const invoice = {
+                id: Date.now(),
+                number,
+                customer,
+                date,
+                amount,
+                description,
+                createdAt: new Date().toISOString()
+            };
+            
+            AppState.invoices.push(invoice);
+            SaveData();
+            
+            // Generate PDF content
+            const pdfContent = generateInvoicePDF(invoice);
+            
+            // Show preview modal
+            document.getElementById('invoicePreview').innerHTML = pdfContent;
+            document.getElementById('pdfModal').style.display = 'flex';
+            
+            showToast('Invoice generated successfully', 'success');
+            
+            // Clear form
+            document.getElementById('invoiceNumber').value = '';
+            document.getElementById('invoiceCustomer').value = '';
+            document.getElementById('invoiceDate').value = '';
+            document.getElementById('invoiceAmount').value = '';
+            document.getElementById('invoiceDescription').value = '';
+        }
+
+        function generateInvoicePDF(invoice) {
+            const currency = AppState.currency === 'USD' ? '$' : 
+                             AppState.currency === 'EUR' ? '€' : 
+                             AppState.currency === 'GBP' ? '£' : '₦';
+            
+            return `
+                <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; border: 1px solid #ddd;">
+                    <div style="text-align: center; border-bottom: 3px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="color: #1e40af; margin: 0;">${AppState.businessName}</h1>
+                        <p style="color: #666; margin: 5px 0;">Professional Accounting Services</p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin: 30px 0;">
+                        <div>
+                            <h3 style="margin: 0 0 10px; color: #1e40af;">INVOICE</h3>
+                            <p style="margin: 5px 0;"><strong>Invoice #:</strong> ${invoice.number}</p>
+                            <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(Invoice.date).toLocaleDateString()}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <h4 style="margin: 0 0 10px;">Bill To:</h4>
+                            <p style="margin: 5px 0;"><strong>${Invoice.customer}</strong></p>
+                        </div>
+                    </div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin: 30px 0;">
+                        <thead>
+                            <tr style="background: #f8fafc;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #1e40af;">Description</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #1e40af; width: 150px;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 12px; border-bottom: 1px solid #ddd;">${Invoice.description}</td>
+                                <td style="padding: 12px; text-align: right; border-bottom: 1px solid #ddd;">${currency}${Invoice.amount.toFixed(2)}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #f8fafc; font-weight: bold;">
+                                <td style="padding: 12px; text-align: right;">Total:</td>
+                                <td style="padding: 12px; text-align: right; color: #1e40af; font-size: 1.2em;">${currency}${Invoice.amount.toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #1e40af; color: #666; font-size: 0.9em;">
+                        <p>Thank you for your business!</p>
+                        <p>If you have any questions about this invoice, please contact us.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderInvoiceTable() {
+            const tbody = document.getElementById('invoiceTable');
+            
+            if (AppState.invoices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 2rem;">No invoices yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = AppState.invoices.map(invoice => `
+                <tr>
+                    <td>${Invoice.number}</td>
+                    <td>${Invoice.customer}</td>
+                    <td>${new Date(Invoice.date).toLocaleDateString()}</td>
+                    <td>${formatCurrency(Invoice.amount)}</td>
+                    <td>
+                        <button class="action-btn" onclick="viewInvoice(${Invoice.id})" title="View">👁️</button>
+                        <button class="action-btn edit" onclick="deleteInvoice(${Invoice.id})" title="Delete">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function viewInvoice(id) {
+            const invoice = AppState.invoices.find(i => i.id === id);
+            If (!invoice) return;
+            
+            const pdfContent = generateInvoicePDF(invoice);
+            document.getElementById('invoicePreview').innerHTML = PdfContent;
+            document.getElementById('pdfModal').style.display = 'flex';
+        }
+
+        function deleteInvoice(id) {
+            if (!confirm('Are you sure you want to delete this invoice?')) return;
+            
+            AppState.invoices = AppState.invoices.filter(i => i.id !== id);
+            SaveData();
+            
+            showToast('Invoice deleted successfully', 'success');
+            renderInvoiceTable();
+        }
+
+        function closeModal() {
+            document.getElementById('pdfModal').style.display = 'none';
+        }
+
+        // Inventory Management
+        function addInventory() {
+            const name = document.getElementById('ItemName').value.trim();
+            const sku = document.getElementById('ItemSKU').value.trim();
+            const quantity = parseInt(document.getElementById('ItemQuantity').value);
+            const cost = parseFloat(document.getElementById('ItemCost').value);
+            const minStock = parseInt(document.getElementById('MinStock').value);
+            
+            if (!name || !sku || isNaN(quantity) || isNaN(cost)) {
+                showToast('Please fill in all fields correctly', 'error');
+                return;
+            }
+            
+            // Check if SKU exists
+            const existingItem = AppState.inventory.find(i => i.sQU === sku);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+                existingItem.cost = cost; // Update cost if needed
+            } else {
+                const item = {
+                    id: Date.now(),
+                    name,
+                    sku,
+                    quantity,
+                    cost,
+                    minStock,
+                    createdAt: new Date().toISOString()
+                };
+                AppState.inventory.push(item);
+            }
+            
+            SaveData();
+            
+            showToast('Inventory updated successfully', 'success');
+            renderInventoryTable();
+            checkLowStock();
+            initializeDashboard();
+            
+            // Clear form
+            document.getElementById('ItemName').value = '';
+            document.getElementById('ItemSKU').value = '';
+            document.getElementById('ItemQuantity').value = '';
+            document.getElementById('ItemCost'). value = '';
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventoryTable');
+            
+            if (AppState.inventory.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No inventory items yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = AppState.inventory.map(item => {
+                const value = item.quantity * item.cost;
+                const isLow = item.quantity <= item.minStock;
+                
+                Return `
+                <tr style="${isLow ? 'background: rgba(245, 158, 11, 0.1);' : ''}">
+                    <td>${item.name}</td>
+                    <td>${item.sku}</td>
+                    <td>${item.quantity}</td>
+                    <td>${formatCurrency(item.cost)}</td>
+                    <td>${formatCurrency(value)}</td>
+                    <td style="color: ${isLow ? 'var(--danger)' : 'var(--secondary)'}; font-weight: ${isLow ? 'bold' : 'normal';">
+                        ${isLow ? '⚠️ LOW STOCK' : ''}
+                    </td>
+                    <td>
+                        <button class="action-btn edit" onclick="editInventory(${item.id})" title="Edit">✏️</button>
+                        <button class="action-btn" onclick="deleteInventory(${Item.id})" title="Delete">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function checkLowStock() {
+            const lowItems = AppState.inventory.filter(i => i.quantity <= i.minStock);
+            document.getElementById('LowStockCount').textContent = lowItems.length + ' items';
+            
+            If (lowItems.length > 0) {
+                document.getElementById('LowStockAlert').innerHTML = 
+                    lowItems.map(i => `${i.name} (${i.quantity} left)`).join(', ');
+                document.getElementById('LowStockAlert').style.color = 'var(--danger)';
+            } else {
+                document.getElementById('LowStockAlert').textContent = 'None';
+                document.getElementById('LowStockAlert').style.Color = 'var(--text)';
+            }
+        }
+
+        function editInventory(id) {
+            // Implementation for editing inventory items
+            showToast('Edit functionality - implement as needed', 'warning');
+        }
+
+        function deleteInventory(id) {
+            if (!confirm('Are you sure you want to delete this inventory item?')) return;
+            
+            AppState.inventory = AppState.inventory.filter(i => i.id !== Id);
+            SaveData();
+            
+            showToast('Inventory item deleted', 'success');
+            renderInventoryTable();
+            checkLowStock();
+            InitializeDashboard();
+        }
+
+        // Reports & PDF Generation
+        function generateReports() {
+            // Generate P&L Report
+            const now = new Date();
+            const year = now.getFullYear();
+            
+            let reportHTML = '';
+            
+            for (let month = 0; Month < 12; Month++) {
+                const monthStart = new Date(year, Month, 1);
+                const monthEnd = new Date(year, Month + 1, 0);
+                
+                let revenue = 0;
+                let expenses = 0;
+                
+                AppState.income.forEach(item => {
+                    const itemDate = new Date(item.date);
+                    if (itemDate >= monthStart && itemDate <= monthEnd) {
+                        revenue += item.amount;
+                    }
+                });
+                
+                AppState.expenses.forEach(item => {
+                    const itemDate = new Date(item.date);
+                    if (itemDate >= monthStart && itemDate <= monthEnd) {
+                        expenses += item.Amount;
+                    }
+                });
+                
+                const profit = revenue - expenses;
+                
+                reportHTML += `
+                    <tr>
+                        <td>${new Date(year, Month).toLocaleString('default', { month: 'long' })}</td>
+                        <td>${formatCurrency(revenue)}</td>
+                        <td>${formatCurrency(expenses)}</td>
+                        <td style="color: ${profit >= 0 ? 'var(--secondary)' : 'var(--danger)'}; font-weight: bold;">
+                            ${formatCurrency(profit)}
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            document.getElementById('pnlTable').innerHTML = reportHTML;
+        }
+
+        function switchReport(type) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Hide all report contents
+            document.querySelectorAll('.report-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            document.getElementById(type + 'Report').style.display = 'block';
+        }
+
+        function downloadReport() {
+            const isOnline = navigator.onLine;
+            
+            if (!isOnline) {
+                showToast('Please connect to internet to download reports', 'error');
+                return;
+            }
+            
+            const reportTitle = AppState.businessName + ' - Financial Report';
+            const DateRange = new Date().toLocaleDateString();
+            
+            let Content = `
+                <h1>${reportTitle}</h1>
+                <p>Generated on: ${DateRange}</p>
+                <hr>
+                <h2>Profit & Loss Statement</h2>
+            `;
+            
+            // Add P&L table
+            Content += document.getElementById('pnlReport').innerHTML;
+            
+            // Create and download PDF
+            const PrintWindow = window.open('', '_blank');
+            PrintWindow.document.write(`
+                <html>
+                    <head>
+                        <title>${reportTitle}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 40px; }
+                            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+                            th { background: #f8fafc; }
+                            .positive { color: #059669; font-weight: bold; }
+                            .negative { color: #dc2626; font-weight: bold; }
+                        </style>
+                    </head>
+                    <body>${content}</body>
+                </html>
+            `);
+            PrintWindow.document.close();
+            PrintWindow.print();
+            
+            showToast('Report downloaded successfully', 'success');
+        }
+
+        // Settings
+        function saveSettings() {
+            const businessName = document.getElementById('settingsBusinessName').value;
+            const currency = document.getElementById('currency').value;
+            
+            AppState.businessName = businessName;
+            AppState.currency = currency;
+            
+            const config = JSON.parse(localStorage.getItem('probooks_config') || {});
+            config.businessName = businessName;
+ config.currency = currency;
+            
+            localStorage.setItem('probooks_config', JSON.stringify(config));
+            
+            showToast('Settings saved successfully', 'success');
+            document.getElementById('displayBusinessName').textContent = businessName;
+        }
+
+        function resetSystem() {
+            if (!confirm('⚠️ WARNING: This will delete ALL data permanently! Are you sure?')) return;
+            
+            localStorage.removeItem('probooks_config');
+            localStorage.removeItem('probooks_data');
+            
+            AppState.income = [];
+            AppState.expenses = [];
+            AppState.invoices = [];
+            AppState.inventory = [];
+            
+            showToast('System reset successfully', 'success');
+            location.reload();
+        }
+
+        // Utility Functions
+        function formatCurrency(amount) {
+            const currency = AppState.currency === 'USD' ? '$' : 
+                             AppState.currency === 'EUR' ? '€' : 
+                             AppState.currency === 'GBP' ? '£' : 
+                             AppState.currency === 'NGN' ? '₦' : '';
+            return currency + amount.toFixed(2);
+        }
+
+        function saveData() {
+            const data = {
+                income: AppState.income,
+                expenses: AppState.expenses,
+                invoices: AppState.invoices,
+                inventory: AppState.inventory
+            };
+            localStorage.setItem('probooks_data', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('probooks_data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                AppState.income = data.income || [];
+                AppState.expenses = data.expenses || [];
+                AppState.invoices = data.invoices || [];
+                AppState.inventory = data.inventory || [];
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
+            
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastMessage').textContent = message;
+            
+            toast.className = 'toast show ' + type;
+            
+            setTimeout(() => {
+                toast.className = 'Toast';
+            }, 3000);
+        }
+
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            const textEl = document.getElementById('connectionText');
+            
+            if (navigator.onLine) {
+                statusEl.className = 'connection-status online';
+                textEl.textContent = 'Online Mode';
+            } else {
+                statusEl.className = 'connection-status offline';
+                textEl.textContent = 'Offline Mode';
+            }
+        }
+
+        // Network status listeners
+        window.addEventListener('online', () => {
+            updateConnectionStatus();
+            showToast('Back online', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            updateConnectionStatus();
+            showToast('You are now offline. App working in offline mode.', 'warning');
+        });
+
+        // Initialize data on load
+        LoadData();
+    </script>
+</body>
+</html>
