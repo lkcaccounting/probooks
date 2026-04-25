@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ProBooks AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── Design tokens extracted from ProBooks app ──────────────────────────── */
+:root {
+  --bg-base:       #131720;
+  --bg-sidebar:    #161b27;
+  --bg-card:       #1e2433;
+  --bg-card-hover: #222840;
+  --bg-input:      #252d3d;
+  --border:        rgba(255,255,255,0.07);
+  --border-focus:  rgba(34,197,94,0.4);
+
+  --text-primary:  #f1f5f9;
+  --text-secondary:#94a3b8;
+  --text-muted:    #64748b;
+  --text-label:    #6b7a99;
+
+  --green:         #22c55e;
+  --green-dim:     #16a34a;
+  --green-bg:      rgba(34,197,94,0.12);
+  --green-border:  rgba(34,197,94,0.25);
+  --red:           #ef4444;
+  --red-bg:        rgba(239,68,68,0.1);
+  --amber:         #f59e0b;
+  --amber-bg:      rgba(245,158,11,0.1);
+  --blue:          #3b82f6;
+
+  --radius:        10px;
+  --radius-sm:     7px;
+  --radius-lg:     14px;
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-base);
+  font-family: var(--font);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+/* ── Layout: sidebar + main ─────────────────────────────────────────────── */
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.logo-text .pro { color: var(--text-primary); }
+.logo-text .books { color: var(--green); }
+
+.logo-version {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.sidebar-section {
+  padding: 18px 10px 6px;
+}
+
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-label);
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 1px;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.sidebar-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+}
+
+.sidebar-item.active {
+  background: var(--green-bg);
+  color: var(--green);
+  font-weight: 500;
+}
+
+.sidebar-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.sidebar-bottom {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 10px;
+}
+
+/* ── Main area ───────────────────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg-base);
+}
+
+.topbar-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--green-border);
+  color: var(--green);
+  background: var(--green-bg);
+}
+
+.status-pill.offline {
+  border-color: rgba(239,68,68,0.3);
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: blink 2s ease infinite;
+}
+.offline .status-dot { animation: none; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+.topbar-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  font-family: var(--font);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.topbar-btn:hover { background: rgba(255,255,255,0.09); color: var(--text-primary); }
+
+/* ── Agent bar ───────────────────────────────────────────────────────────── */
+.agent-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 24px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-height: 40px;
+}
+
+.agent-bar-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.agent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 500;
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+  transition: all 0.2s;
+}
+
+.agent-pill.hidden { display: none; }
+
+.agent-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Messages ────────────────────────────────────────────────────────────── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+/* Welcome */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 20px 24px;
+  animation: fadeUp 0.4s ease;
+}
+
+.welcome-icon {
+  width: 56px; height: 56px;
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.welcome h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.welcome p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  max-width: 480px;
+  line-height: 1.65;
+  margin-bottom: 24px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 600px;
+}
+
+.chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.chip:hover {
+  border-color: var(--green-border);
+  color: var(--green);
+  background: var(--green-bg);
+}
+
+/* Message rows */
+.msg {
+  display: flex;
+  gap: 10px;
+  animation: fadeUp 0.25s ease;
+  max-width: 100%;
+}
+.msg.user { flex-direction: row-reverse; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  align-self: flex-end;
+}
+
+.msg.ai .avatar {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+}
+
+.msg.user .avatar {
+  background: rgba(59,130,246,0.15);
+  border: 1px solid rgba(59,130,246,0.25);
+  color: var(--blue);
+}
+
+.msg-inner { max-width: calc(100% - 44px); }
+
+.bubble {
+  padding: 11px 15px;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+.msg.ai .bubble {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-bottom-left-radius: 3px;
+}
+
+.msg.user .bubble {
+  background: var(--green-dim);
+  color: #fff;
+  border-bottom-right-radius: 3px;
+}
+
+.bubble.offline {
+  background: var(--amber-bg);
+  border-color: rgba(245,158,11,0.2);
+  color: var(--amber);
+}
+
+.bubble.error {
+  background: var(--red-bg);
+  border-color: rgba(239,68,68,0.2);
+  color: var(--red);
+}
+
+.bubble pre {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  margin: 8px 0;
+  color: #a8d8a8;
+}
+
+.bubble code {
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  background: rgba(0,0,0,0.2);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.bubble strong { font-weight: 600; }
+
+.msg-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Typing */
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 3px;
+  max-width: 60px;
+}
+.typing span {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: typebounce 1.2s ease infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typebounce {
+  0%,100%{transform:translateY(0);opacity:0.35}
+  40%{transform:translateY(-4px);opacity:1}
+}
+
+/* ── Offline banner ──────────────────────────────────────────────────────── */
+.offline-banner {
+  display: none;
+  background: rgba(245,158,11,0.08);
+  border-bottom: 1px solid rgba(245,158,11,0.2);
+  padding: 8px 24px;
+  font-size: 12px;
+  color: var(--amber);
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.offline-banner.show { display: flex; }
+
+/* ── Input area ──────────────────────────────────────────────────────────── */
+.input-area {
+  border-top: 1px solid var(--border);
+  padding: 14px 24px;
+  background: var(--bg-base);
+  flex-shrink: 0;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.qa-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px 11px;
+  font-family: var(--font);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.qa-btn:hover {
+  border-color: var(--green-border);
+  color: var(--green);
+  background: var(--green-bg);
+}
+
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  transition: border-color 0.2s;
+}
+.input-row:focus-within { border-color: rgba(34,197,94,0.35); }
+
+.textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font);
+  font-size: 13.5px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  max-height: 120px;
+  min-height: 22px;
+  overflow-y: auto;
+}
+.textarea::placeholder { color: var(--text-muted); }
+
+.send-btn {
+  width: 34px; height: 34px;
+  background: var(--green-dim);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  color: #fff;
+}
+.send-btn:hover { background: var(--green); }
+.send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.send-btn svg { width: 14px; height: 14px; }
+
+.input-hint {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 7px;
+  text-align: center;
+}
+
+/* ── Agent cards in sidebar ──────────────────────────────────────────────── */
+.agent-grid {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .sidebar { display: none; }
+  .topbar { padding: 0 16px; }
+  .messages { padding: 16px; }
+  .input-area { padding: 12px 16px; }
+  .agent-bar { padding: 8px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar matching ProBooks nav -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text"><span class="pro">Pro</span><span class="books">Books</span></div>
+      <div class="logo-version">v1.0 Professional</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Overview</div>
+      <a href="/app.com/" class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Finance</div>
+      <a href="/app.com/#income" class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Income
+      </a>
+      <a href="/app.com/#expenses" class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+        Expenses
+      </a>
+      <a href="/app.com/#pl" class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Profit & Loss
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Operations</div>
+      <a href="/app.com/#invoices" class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Invoices
+      </a>
+      <a href="/app.com/#stock" class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        Stock / Inventory
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Reports</div>
+      <a href="/app.com/#reports" class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Reports
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">AI</div>
+      <div class="sidebar-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        AI Assistant
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-item" style="color: var(--red);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Lock App
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title">AI Assistant</div>
+      <div class="topbar-right">
+        <div class="status-pill" id="statusPill">
+          <div class="status-dot"></div>
+          <span id="statusText">Online</span>
+        </div>
+        <button class="topbar-btn" onclick="clearChat()">New Chat</button>
+      </div>
+    </div>
+
+    <!-- Offline banner -->
+    <div class="offline-banner" id="offlineBanner">
+      ⚡ You're offline — ProBooks AI needs an internet connection to work.
+    </div>
+
+    <!-- Agent indicator -->
+    <div class="agent-bar">
+      <span class="agent-bar-label">Agent:</span>
+      <span class="agent-pill hidden" id="agentPill"></span>
+      <span class="agent-hint" id="agentHint">Powered by ProBooks AI · 8 specialist agents</span>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcomeBlock">
+        <div class="welcome-icon">✦</div>
+        <h2>ProBooks AI is ready</h2>
+        <p>Your multi-agent accounting intelligence. Ask about transactions, reports, fraud detection, tax compliance, cash flow forecasting, or anything financial.</p>
+        <div class="chips">
+          <div class="chip" onclick="sendChip(this)">📊 Generate P&amp;L report</div>
+          <div class="chip" onclick="sendChip(this)">🔍 Detect duplicate payments</div>
+          <div class="chip" onclick="sendChip(this)">💰 Forecast next quarter cash flow</div>
+          <div class="chip" onclick="sendChip(this)">⚖ Calculate my VAT liability</div>
+          <div class="chip" onclick="sendChip(this)">📉 Explain expense variance</div>
+          <div class="chip" onclick="sendChip(this)">📝 How do I record a prepayment?</div>
+          <div class="chip" onclick="sendChip(this)">🧾 Match invoice to purchase order</div>
+          <div class="chip" onclick="sendChip(this)">📋 Analyze this contract</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="fill('Categorize this transaction: ')">+ Transaction</button>
+        <button class="qa-btn" onclick="fill('Check for fraud or anomalies in: ')">🛡 Fraud Check</button>
+        <button class="qa-btn" onclick="fill('Generate income statement for ')">📊 Report</button>
+        <button class="qa-btn" onclick="fill('What if my sales drop 20%?')">📈 Scenario</button>
+        <button class="qa-btn" onclick="fill('Calculate KRA tax on ')">⚖ Tax</button>
+        <button class="qa-btn" onclick="fill('Analyze this document: ')">📄 Document</button>
+      </div>
+      <div class="input-row">
+        <textarea
+          class="textarea"
+          id="chatInput"
+          placeholder="Ask ProBooks AI — transactions, reports, forecasts, compliance, payroll…"
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="resize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="send()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="input-hint">ProBooks AI · Multi-agent financial intelligence</div>
+    </div>
+  </div>
+</div>
+
+<script src="probooks-ai.js"></script>
+<script>
+let busy = false;
+
+// Network status
+function updateNet() {
+  const on = navigator.onLine;
+  const pill = document.getElementById('statusPill');
+  const txt = document.getElementById('statusText');
+  const banner = document.getElementById('offlineBanner');
+  pill.className = 'status-pill' + (on ? '' : ' offline');
+  txt.textContent = on ? 'Online' : 'Offline';
+  banner.className = 'offline-banner' + (on ? '' : ' show');
+}
+window.addEventListener('online', updateNet);
+window.addEventListener('offline', updateNet);
+updateNet();
+
+// Input helpers
+function resize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+}
+function fill(text) {
+  const i = document.getElementById('chatInput');
+  i.value = text; i.focus(); resize(i);
+}
+function sendChip(el) {
+  fill(el.textContent.replace(/^[^\w\s]*\s*/, ''));
+  send();
+}
+
+// Render helpers
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(text) {
+  return escHtml(text)
+    .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+function addMsg(text, role, cls) {
+  const area = document.getElementById('messages');
+  const wb = document.getElementById('welcomeBlock');
+  if (wb) wb.remove();
+
+  const row = document.createElement('div');
+  row.className = `msg ${role}`;
+
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.textContent = role === 'ai' ? 'AI' : 'U';
+
+  const inner = document.createElement('div');
+  inner.className = 'msg-inner';
+
+  const bub = document.createElement('div');
+  bub.className = `bubble ${cls||''}`;
+  bub.innerHTML = fmt(text);
+  inner.appendChild(bub);
+
+  if (role === 'ai') { row.appendChild(av); row.appendChild(inner); }
+  else { row.appendChild(inner); row.appendChild(av); }
+
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+  return bub;
+}
+
+function showTyping() {
+  const area = document.getElementById('messages');
+  const wb = document.getElementById('welcomeBlock');
+  if (wb) wb.remove();
+  const row = document.createElement('div');
+  row.className = 'msg ai'; row.id = 'typing';
+  const av = document.createElement('div'); av.className = 'avatar'; av.textContent = 'AI';
+  const t = document.createElement('div'); t.className = 'typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  row.appendChild(av); row.appendChild(t);
+  area.appendChild(row); area.scrollTop = area.scrollHeight;
+}
+function hideTyping() { const el = document.getElementById('typing'); if(el) el.remove(); }
+
+function setAgent(agent) {
+  const pill = document.getElementById('agentPill');
+  const hint = document.getElementById('agentHint');
+  if (agent) {
+    pill.textContent = `${agent.icon} ${agent.name}`;
+    pill.className = 'agent-pill';
+    hint.textContent = '';
+  } else {
+    pill.className = 'agent-pill hidden';
+    hint.textContent = 'Powered by ProBooks AI · 8 specialist agents';
+  }
+}
+
+async function send() {
+  if (busy) return;
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = ''; resize(input);
+  busy = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  addMsg(msg, 'user');
+
+  if (!navigator.onLine) {
+    addMsg("You're offline. Please connect to the internet to use ProBooks AI.", 'ai', 'offline');
+    busy = false; document.getElementById('sendBtn').disabled = false;
+    return;
+  }
+
+  showTyping();
+  try {
+    const res = await ProBooksAI.chat(msg);
+    hideTyping();
+    if (res.offline) addMsg(res.message, 'ai', 'offline');
+    else if (res.error) addMsg(res.message, 'ai', 'error');
+    else { setAgent(res.agent); addMsg(res.message, 'ai'); }
+  } catch(e) {
+    hideTyping();
+    addMsg(`Unexpected error: ${e.message}`, 'ai', 'error');
+  }
+
+  busy = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('chatInput').focus();
+}
+
+function clearChat() {
+  ProBooksAI.clearHistory();
+  setAgent(null);
+  document.getElementById('messages').innerHTML = `
+    <div class="welcome" id="welcomeBlock">
+      <div class="welcome-icon">✦</div>
+      <h2>ProBooks AI is ready</h2>
+      <p>Your multi-agent accounting intelligence. Ask about transactions, reports, fraud detection, tax compliance, cash flow forecasting, or anything financial.</p>
+      <div class="chips">
+        <div class="chip" onclick="sendChip(this)">📊 Generate P&L report</div>
+        <div class="chip" onclick="sendChip(this)">🔍 Detect duplicate payments</div>
+        <div class="chip" onclick="sendChip(this)">💰 Forecast next quarter cash flow</div>
+        <div class="chip" onclick="sendChip(this)">⚖ Calculate my VAT liability</div>
+        <div class="chip" onclick="sendChip(this)">📉 Explain expense variance</div>
+        <div class="chip" onclick="sendChip(this)">📝 How do I record a prepayment?</div>
+        <div class="chip" onclick="sendChip(this)">🧾 Match invoice to purchase order</div>
+        <div class="chip" onclick="sendChip(this)">📋 Analyze this contract</div>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
