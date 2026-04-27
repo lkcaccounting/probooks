@@ -1,8 +1,3 @@
-/**
- * ProBooks AI — Floating Widget (Dark Theme)
- * Add this ONE LINE before </body> in your software:
- *   <script src="probooks-ai-widget.js"></script>
- */
 (function () {
   const css = `
     #pb-btn {
